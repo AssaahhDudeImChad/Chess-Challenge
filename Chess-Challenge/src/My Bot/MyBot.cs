@@ -13,36 +13,32 @@ public class MyBot : IChessBot
         bool color = board.IsWhiteToMove;
         Move[] moves = board.GetLegalMoves();
         int[] scores = new int[moves.Length];
-        int[] values = {0, 30, 50, 70, 60, 90, 100};
+        int[] values = {30, 50, 70, 60, 90, 100};
 
-        int countup(Board board, int[] values){
+        int move_weight(Board board, int[] values, Move move){
             int count = 0;
             PieceList[] pieces = board.GetAllPieceLists();
-            for(int i=0; i<5; i++){
-                count +=(values[i]*pieces[i].Count);
+            int countup(int[] values){
+                for(int i=0; i<6; i++){
+                    count +=(values[i]*pieces[i].Count);
+                   
+                for(int x=6; x<12; x++){
+                    count -=(values[x-6]*pieces[x].Count);
+                }
+                }
+                Console.WriteLine(count);
+                return count;
+                
             }
-            return(count);
+            int before = countup(values);
+            board.MakeMove(move);
+            int after = countup(values);
+            board.UndoMove(move);
+            return(after-before);
+            
             
         }
-        static int pieceweight(Piece piece){
-         
 
-            if(piece.IsPawn){
-                return(30);
-            }else if(piece.IsKnight){
-                return(50);
-            }else if(piece.IsRook){
-                return(60);
-            }else if(piece.IsBishop){
-                return(70);
-            }else if(piece.IsQueen){
-                return(90);
-            }else if(piece.IsKing){
-                return(100);
-            }else{
-                return(0);
-            }
-        }
         static int ischeck_or_mate(Board board, Move move){
             board.MakeMove(move);
             bool ischeck = board.IsInCheck();
@@ -57,19 +53,10 @@ public class MyBot : IChessBot
             }
 
         }
-        Console.WriteLine(countup(board, values));
-        
-        int GetHighestScore(Board board, Move[] moves, int[] scores){
+        int GetHighestScore(Board board, Move[] moves, int[] scores, int[] values){
            
             for(int i = 0; i++ < moves.Length-1;){
-         
-                bool capture = moves[i].IsCapture;
-                if(capture == true){
-                    
-                    var capture_type = moves[i].TargetSquare;
-                    Piece target = board.GetPiece(capture_type);
-                    scores[i] += pieceweight(target);
-                }
+                scores[i] += move_weight(board, values, moves[i]);
                 int check_mate = ischeck_or_mate(board, moves[i]);
                 if(check_mate == 1){
                     scores[i] += 250;
@@ -82,7 +69,7 @@ public class MyBot : IChessBot
             return(highest_index);
         }
        
-        int index = GetHighestScore(board, moves, scores);
+        int index = GetHighestScore(board, moves, scores, values);
         
         if(scores[index] == 0){
             Random random = new Random();
