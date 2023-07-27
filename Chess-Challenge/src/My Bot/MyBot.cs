@@ -20,8 +20,7 @@ public class MyBot : IChessBot
             PieceList[] pieces = board.GetAllPieceLists();
             int countup(int[] values){
                 for(int i=0; i<6; i++){
-                    count +=(values[i]*pieces[i].Count);
-                    
+                    count +=(values[i]*pieces[i].Count);     
                 }
                 for(int x=0; x<6; x++){
                     count -=(values[x]*pieces[x+6].Count);
@@ -58,15 +57,18 @@ public class MyBot : IChessBot
             return(highest_index);
         }
         
-        if(scores[GetHighestScore(board, moves, scores, values)] == 0){
-            Random random = new Random();
-            int random_move = random.Next(0, moves.Length);
+        Move check_moves(Board board, Move[] moves, bool Whiteturn){
+            if(scores[GetHighestScore(board, moves, scores, values)] == 0){
+                Random random = new Random();
+                int random_move = random.Next(0, moves.Length);
 
-            return moves[random_move];
-        }else{
-         
-            return moves[GetHighestScore(board, moves, scores, values)];
+                return moves[random_move];
+            }else{
+            
+                return moves[GetHighestScore(board, moves, scores, values)];
+            }
         }
+        return(check_moves(board, moves, true));
 
     }
 }
