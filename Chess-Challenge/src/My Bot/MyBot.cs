@@ -21,64 +21,51 @@ public class MyBot : IChessBot
             int countup(int[] values){
                 for(int i=0; i<6; i++){
                     count +=(values[i]*pieces[i].Count);
-                   
-                for(int x=6; x<12; x++){
-                    count -=(values[x-6]*pieces[x].Count);
+                    
                 }
+                for(int x=0; x<6; x++){
+                    count -=(values[x]*pieces[x+6].Count);
+                    
                 }
-                Console.WriteLine(count);
                 return count;
                 
             }
+            
             int before = countup(values);
             board.MakeMove(move);
             int after = countup(values);
             board.UndoMove(move);
-            return(after-before);
-            
-            
-        }
+            //the weight modifier from captures
+            int capture_weight = (before-after);
+            //getting the weight modifier from checks
 
-        static int ischeck_or_mate(Board board, Move move){
             board.MakeMove(move);
             bool ischeck = board.IsInCheck();
             bool ismate = board.IsInCheckmate();
             board.UndoMove(move);
-            if(ischeck){
-                return(1);
-            }else if(ismate){
-                return(2);
-            }else{
-                return(0);
-            }
+            int check_weight = ((Convert.ToInt32(ischeck)+Convert.ToInt32(ismate))*100);
 
+            return(check_weight+capture_weight);
+            
         }
         int GetHighestScore(Board board, Move[] moves, int[] scores, int[] values){
            
             for(int i = 0; i++ < moves.Length-1;){
                 scores[i] += move_weight(board, values, moves[i]);
-                int check_mate = ischeck_or_mate(board, moves[i]);
-                if(check_mate == 1){
-                    scores[i] += 250;
-                }else if(check_mate == 2){
-                    scores[i] += 1000000000;
-                }
             }
             int highest_score = scores.Max();
             int highest_index = Array.IndexOf(scores, highest_score);
             return(highest_index);
         }
-       
-        int index = GetHighestScore(board, moves, scores, values);
         
-        if(scores[index] == 0){
+        if(scores[GetHighestScore(board, moves, scores, values)] == 0){
             Random random = new Random();
             int random_move = random.Next(0, moves.Length);
 
             return moves[random_move];
         }else{
          
-            return moves[index];
+            return moves[GetHighestScore(board, moves, scores, values)];
         }
 
     }
