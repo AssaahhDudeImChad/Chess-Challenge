@@ -43,7 +43,7 @@ public class MyBot : IChessBot
             bool ismate = board.IsInCheckmate();
             board.UndoMove(move);
             int check_weight = ((Convert.ToInt32(ischeck)+Convert.ToInt32(ismate))*100);
-
+            Console.WriteLine((check_weight+capture_weight));
             return(check_weight+capture_weight);
             
         }
@@ -57,18 +57,17 @@ public class MyBot : IChessBot
             return(highest_index);
         }
         
-        Move check_moves(Board board, Move[] moves, bool Whiteturn){
-            if(scores[GetHighestScore(board, moves, scores, values)] == 0){
-                Random random = new Random();
-                int random_move = random.Next(0, moves.Length);
+        if(scores[GetHighestScore(board, moves, scores, values)] == 0){
+            Random random = new Random();
+            int random_move = random.Next(0, moves.Length);
 
-                return moves[random_move];
-            }else{
-            
-                return moves[GetHighestScore(board, moves, scores, values)];
-            }
+            return moves[random_move];
+        }else{
+        
+            return moves[GetHighestScore(board, moves, scores, values)];
         }
-        return(check_moves(board, moves, true));
+    
+
 
     }
 }
