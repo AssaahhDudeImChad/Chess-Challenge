@@ -21,7 +21,7 @@ public class MyBot : IChessBot
         Move[] moves = board.GetLegalMoves();
         int[] scores = new int[moves.Length];
         int[] values = {30, 50, 70, 60, 90, 100};
-        int move_weight(Board board, int[] values, Move move, bool they_white){
+        int move_weight(Board board, int[] values, Move[] moves, bool they_white){
             //args = the board, the values, if the opponent is white, 
             //and who needs to be counted, T for us, F for opponent
             int countthey = 0;
@@ -45,44 +45,57 @@ public class MyBot : IChessBot
             }
             return(countthey);
             }
+
+
             int before = countup(values, they_white);
-            board.MakeMove(move);
+            for(int i=0; i++<moves.Length;){
+                board.MakeMove(moves[i]);
+            }
             int after = countup(values, they_white);
-            board.UndoMove(move);
+            bool ischeck = board.IsInCheck();
+            bool ismate = board.IsInCheckmate();
             //the weight modifier from captures
             int capture_weight = (before-after);
             Console.WriteLine(capture_weight);
             //getting the weight modifier from checks
-     
-            board.MakeMove(move);
-            bool ischeck = board.IsInCheck();
-            bool ismate = board.IsInCheckmate();
-            board.UndoMove(move);
             int check_weight = ((Convert.ToInt32(ischeck)+Convert.ToInt32(ismate))*100);
+            int[]
             return(check_weight+capture_weight);
             
         }
-        int GetHighestScore(Board board, Move[] moves, int[] scores, int[] values, bool they_white){
-           
-            for(int i = 0; i++ < moves.Length-1;){
-                scores[i] += move_weight(board, values, moves[i], they_white);
+
+        Move search_for_moves(Board board, bool they_white, int depth){
+            
+            Move[] moves = board.GetLegalMoves();
+            int [] weights = new int[moves.Length];
+            for(int i=0; i< moves.Length;){
+                Move[] done_moves =new Move[depth];
+                for(int j=0; j++ <depth;){
+                    board.MakeMove(moves[move_weight(board, moves)]);
+                    done_moves[j] = moves[GetHighestScore(board, moves)];
+                    
+                }
+
+                weights[i] = move_weight(board, values, done_moves, they_white);
+                for(int k=depth; k-- >depth;){
+                    board.UndoMove(done_moves[k]);
+                }  
             }
-            int highest_score = scores.Max();
-            int highest_index = Array.IndexOf(scores, highest_score);
-            return(highest_index);
+            int highest_score = weights.Max();
+            int highest_index = Array.IndexOf(weights, highest_score);
+            
+            if(weights[highest_index] < 0){
+                Random random = new Random();
+                int random_move = random.Next(0, moves.Length);
+                return moves[random_move];
+            }
+            else{
+                return moves[highest_index];
+            }
         }
-        int index = GetHighestScore(board, moves, scores, values, they_white);
-        if(scores[index] ==0){
-            Random random = new Random();
-            int random_move = random.Next(0, moves.Length);
-
-            return moves[random_move];
-        }else{
-        
-            return moves[GetHighestScore(board, moves, scores, values, they_white)];
+        return(search_for_moves(board, they_white, 3));
         }
-    
 
 
-    }
 }
+
