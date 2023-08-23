@@ -79,7 +79,11 @@ public class MyBot : IChessBot
             return moves[random_move];
         }else{
         
+<<<<<<< Updated upstream
             return moves[GetHighestScore(board, moves, scores, values, they_white)];
+=======
+            return moves[GetHighestScore(board, board.GetLegalMoves(), scores, values, they_white)];
+>>>>>>> Stashed changes
         }
     
 
