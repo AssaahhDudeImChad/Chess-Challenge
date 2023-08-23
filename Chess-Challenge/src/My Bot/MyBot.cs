@@ -8,69 +8,55 @@ public class MyBot : IChessBot
 {   
  
     //null, pawn, knight, bishop, rook, queen, king
-    public Move Think(Board board, Timer timer){
-        bool me_white = true;
-        bool they_white = false;
-        if(board.IsWhiteToMove){
-            me_white = true;
-            they_white = false;
-        }else{
-            they_white = true;
-            me_white = false;
-        }
+    public Move Think(Board board, Timer timer){   
+        
+        bool color = board.IsWhiteToMove;
         Move[] moves = board.GetLegalMoves();
         int[] scores = new int[moves.Length];
         int[] values = {30, 50, 70, 60, 90, 100};
-        int move_weight(Board board, int[] values, Move move, bool they_white){
-            //args = the board, the values, if the opponent is white, 
-            //and who needs to be counted, T for us, F for opponent
-            int countthey = 0;
-            int countme = 0;
 
+        int move_weight(Board board, int[] values, Move move){
+            int count = 0;
             PieceList[] pieces = board.GetAllPieceLists();
-            int countup(int[] values, bool they_white){
-                int white_count = 0;
-                int black_count = 0;
+            int countup(int[] values){
                 for(int i=0; i<6; i++){
-                    white_count +=(values[i]*pieces[i].Count);     
+                    count +=(values[i]*pieces[i].Count);     
                 }
-            
                 for(int x=0; x<6; x++){
-                    black_count +=(values[x]*pieces[x+6].Count);   
+                    count -=(values[x]*pieces[x+6].Count);
+                    
                 }
+                return count;
+                
+            }
             
-            if(they_white){
-                countme = black_count;
-                countthey = white_count;
-            }
-            return(countthey);
-            }
-            int before = countup(values, they_white);
+            int before = countup(values);
             board.MakeMove(move);
-            int after = countup(values, they_white);
+            int after = countup(values);
             board.UndoMove(move);
             //the weight modifier from captures
             int capture_weight = (before-after);
-            Console.WriteLine(capture_weight);
             //getting the weight modifier from checks
-     
+
             board.MakeMove(move);
             bool ischeck = board.IsInCheck();
             bool ismate = board.IsInCheckmate();
             board.UndoMove(move);
             int check_weight = ((Convert.ToInt32(ischeck)+Convert.ToInt32(ismate))*100);
+            Console.WriteLine((check_weight+capture_weight));
             return(check_weight+capture_weight);
             
         }
-        int GetHighestScore(Board board, Move[] moves, int[] scores, int[] values, bool they_white){
+        int GetHighestScore(Board board, Move[] moves, int[] scores, int[] values){
            
             for(int i = 0; i++ < moves.Length-1;){
-                scores[i] += move_weight(board, values, moves[i], they_white);
+                scores[i] += move_weight(board, values, moves[i]);
             }
             int highest_score = scores.Max();
             int highest_index = Array.IndexOf(scores, highest_score);
             return(highest_index);
         }
+<<<<<<< HEAD
         int index = GetHighestScore(board, moves, scores, values, they_white);
         if(scores[index] ==0){
             Random random = new Random();
@@ -84,6 +70,17 @@ public class MyBot : IChessBot
 =======
             return moves[GetHighestScore(board, board.GetLegalMoves(), scores, values, they_white)];
 >>>>>>> Stashed changes
+=======
+        
+        if(scores[GetHighestScore(board, moves, scores, values)] == 0){
+            Random random = new Random();
+            int random_move = random.Next(0, moves.Length);
+
+            return moves[random_move];
+        }else{
+        
+            return moves[GetHighestScore(board, moves, scores, values)];
+>>>>>>> 86eba6c94136d7b5817584d164ec4bc7de79625f
         }
     
 
