@@ -48,6 +48,7 @@ public class MyBot : IChessBot
             
         }
         int GetHighestScore(Board board, int[] scores, int[] values){
+            Console.WriteLine("GetHighest Score");
             Move[] moves = board.GetLegalMoves();
             for(int i = 0; i++ < moves.Length-1;){
                 scores[i] += move_weight(board, values, moves[i]);
@@ -59,6 +60,7 @@ public class MyBot : IChessBot
 
 
         int[] Search_moves(int depth){
+            Console.WriteLine("Running search_moves");
             Move[] done_moves = new Move[depth];
             int[] scores = new int[board.GetLegalMoves().Length];
 
@@ -79,7 +81,7 @@ public class MyBot : IChessBot
             return(scores);
 
         }
-        Search_moves(1);
+        Search_moves(3);
         int highest_score = scores.Max();
         if(highest_score ==0){
             Random random = new Random();
