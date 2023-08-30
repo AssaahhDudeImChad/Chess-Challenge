@@ -8,7 +8,10 @@ public class MyBot : IChessBot
 {   
  
     public Move Think(Board board, Timer timer){  
+
         bool AI_is_white = board.IsWhiteToMove;
+        Random random = new Random();
+        Move[] moves = board.GetLegalMoves();
         //Fucntion to get the board weight in the favour/dis Favour of the AI 
         int get_board_weight(bool white){
 
@@ -53,19 +56,79 @@ public class MyBot : IChessBot
                 int move_weight = (after_weight-before_weight);
                 move_weights[i] = move_weight;
             }
-            Console.WriteLine("", move_weights);
 
             int best_move_index = Array.IndexOf(move_weights, move_weights.Max());
+            if(move_weights.Max() == 0 && legal_moves.Length > 16){
+                best_move_index = random.Next(13, 16);//somthig between 13 and 16
+            }
             return legal_moves[best_move_index];
-        }
-
-        //The main loop, gets the best move, makes it, starts again for depth x
+        }   
+        //main loop, for EACH move currentlt available, make it, then look at the best
+        //make it and continue for depth x
         //Then runs a final board countup function for that branch, and adds 
         // that to the array 
-    
-        // call the main loop
 
+        //for loop:
+        //get best move, and make it
+        //Get best move for white/ black relative to what the AI is and who's turn it is
+        //Do this for x times, and do a final board countup, append that to the main list
+        int depth = 10;
+        int [] final_move_weights = new int[board.GetLegalMoves().Length];
+
+        for(int x = 0; x < board.GetLegalMoves().Length-1; x++){
+            board.MakeMove(board.GetLegalMoves()[x]);
+            Move[] done_moves = new Move[depth];
+            Move picked_move = board.GetLegalMoves()[0];
+            for(int i = 1; i < depth; i++){
+                
+                //if it's odd, look at OUR best move, if othersie look at THEIR best move
+                if(i % 2 == 0){
+                    //even
+                    //find THEIR best move and make it
+                    if(AI_is_white){
+                        //find best move white=false
+                       picked_move = get_best_move(false);
+
+                    }else{
+                        //find best move white=true
+                       picked_move =get_best_move(true);
+                    }
+                    }else{
+                    //odd
+                    //find OUR best move and make it
+                    if(AI_is_white){
+                        //find best move white=true
+                       picked_move = get_best_move(true);
+                    }else{
+                        //fine best move whtie=false
+                       picked_move = get_best_move(false);
+                    }
+                        
+                    }
+                //make that move
+                board.MakeMove(picked_move);
+                done_moves[i]  = picked_move;
+                //re-start the loop and at the END run a countup for the loop 
+            }
+            //countup the board values
+            //Something is wrong here.... they are blank ints...
+            final_move_weights[x] += get_board_weight(AI_is_white);
+            for(int i = done_moves.Length-1; i > 0; i--){
+                board.UndoMove(done_moves[i]);
+            }
+        } 
+        //TODO;
+        //ITs not undoing the moves in the right order
+        //this means it registers the WRONG current avaialbel mvoes, it's picking the best ones but 
+        //it isnt executing the right ones if that make sense
+        //find highest score in array
+        int index_of_best_move = Array.IndexOf(final_move_weights, final_move_weights.Max());
+        // call the main loop
         Move move = get_best_move(true);
-        return move;
+        Move[] legal_moves = board.GetLegalMoves();
+        Console.WriteLine("moves availabel: "+legal_moves.Length);
+        Console.WriteLine("index of best move: " +(index_of_best_move-1));
+        
+        return legal_moves[index_of_best_move-1];
     }
 }
