@@ -10,7 +10,7 @@ public class MyBot : IChessBot
     public Move Think(Board board, Timer timer){  
         bool AI_is_white = board.IsWhiteToMove;
         //Fucntion to get the board weight in the favour/dis Favour of the AI 
-        int get_board_weight(){
+        int get_board_weight(bool white){
 
             //loop throguh the piece list and get white and black values
 
@@ -27,20 +27,37 @@ public class MyBot : IChessBot
             for(int y = 0; y <6; y++){
                 black_peices += (pieces[y+6].Count * weights[y]);
             }
-            if(AI_is_white){
-                board_weight = white_peices - black_peices;
+            if(white){
+                board_weight = black_peices-white_peices;
             }else{
-                board_weight = black_peices - white_peices;
+                board_weight = white_peices-black_peices;
             }
 
             return board_weight;
         
         }
-        Console.WriteLine(get_board_weight());
 
         //Func to get the current best move, basically looks through the moves and runs
         //board weight for each move and returns the best move
+        Move get_best_move(bool white){
+            Move[] legal_moves = board.GetLegalMoves();
+            
+            int[] move_weights = new int[legal_moves.Length];
+            for(int i = 0; i < legal_moves.Length; i++){
+                //get the current weight, make the move, get the weight after, and compare
+                int before_weight = get_board_weight(white);
+                board.MakeMove(legal_moves[i]);
+                int after_weight = get_board_weight(white);
+                board.UndoMove(legal_moves[i]);
 
+                int move_weight = (after_weight-before_weight);
+                move_weights[i] = move_weight;
+            }
+            Console.WriteLine("", move_weights);
+
+            int best_move_index = Array.IndexOf(move_weights, move_weights.Max());
+            return legal_moves[best_move_index];
+        }
 
         //The main loop, gets the best move, makes it, starts again for depth x
         //Then runs a final board countup function for that branch, and adds 
@@ -48,10 +65,7 @@ public class MyBot : IChessBot
     
         // call the main loop
 
-
-
-
-        Move[] moves = board.GetLegalMoves();
-        return moves[0];
+        Move move = get_best_move(true);
+        return move;
     }
 }
