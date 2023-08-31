@@ -53,19 +53,17 @@ public class MyBot : IChessBot
                 int after_weight = get_board_weight(white);
                 if(board.IsInCheck()){
                     //see if black king is in check or mate
-                    after_weight += 100;
+                    after_weight += 8;
                 }
                 board.UndoMove(legal_moves[i]);
 
                 int move_weight = (after_weight-before_weight);
                 move_weights[i] = move_weight;
             }
-            for(int x = 0; x < move_weights.Max(); x++){
-                Console.WriteLine(move_weights[x]); 
-            }
-            int best_move_index = Array.IndexOf(move_weights, move_weights.Max());
-            if(move_weights.Max() == 0 && legal_moves.Length > 16){
-                best_move_index = random.Next(13, 16);//somthig between 13 and 16
+            int max = move_weights.Max();
+            int best_move_index = Array.IndexOf(move_weights, max);
+            if(max == 0){
+                best_move_index = random.Next(0, legal_moves.Length);//somthig between 13 and 16
             }
             return legal_moves[best_move_index];
         }   
@@ -78,7 +76,7 @@ public class MyBot : IChessBot
         //get best move, and make it
         //Get best move for white/ black relative to what the AI is and who's turn it is
         //Do this for x times, and do a final board countup, append that to the main list
-        int depth = 10;
+        int depth = 5;
         int [] final_move_weights = new int[board.GetLegalMoves().Length];
 
         for(int x = 0; x < board.GetLegalMoves().Length; x++){
@@ -88,9 +86,14 @@ public class MyBot : IChessBot
             Move picked_move = board.GetLegalMoves()[0];
             done_moves[0] = board.GetLegalMoves()[x];
             for(int i = 1; i < depth; i++){
-                
+                if(board.IsInCheck()){
+                    final_move_weights[x] += 101;
+                    break;
+                }
                 //if it's odd, look at OUR best move, if othersie look at THEIR best move
                 if(i % 2 == 0){
+                    //Check that if someone is in check, Stop the loop and add the max value to the weights
+
                     //even
                     //find THEIR best move and make it
                     if(AI_is_white){
@@ -113,6 +116,7 @@ public class MyBot : IChessBot
                     }
                         
                     }
+                
                 //make that move
                 board.MakeMove(picked_move);
                 done_moves[i]  = picked_move;
@@ -137,7 +141,9 @@ public class MyBot : IChessBot
         Move[] legal_moves = board.GetLegalMoves();
         //Console.WriteLine("moves availabel: "+legal_moves.Length);
         //Console.WriteLine("index of best move: " +(index_of_best_move-1));
-        
+        if(legal_moves[index_of_best_move].IsNull == true){
+            return(legal_moves[random.Next(0, legal_moves.Length)]);
+        }
         return legal_moves[index_of_best_move];
     }
 }
