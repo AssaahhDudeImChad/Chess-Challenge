@@ -51,12 +51,18 @@ public class MyBot : IChessBot
                 int before_weight = get_board_weight(white);
                 board.MakeMove(legal_moves[i]);
                 int after_weight = get_board_weight(white);
+                if(board.IsInCheck()){
+                    //see if black king is in check or mate
+                    after_weight += 100;
+                }
                 board.UndoMove(legal_moves[i]);
 
                 int move_weight = (after_weight-before_weight);
                 move_weights[i] = move_weight;
             }
-
+            for(int x = 0; x < move_weights.Max(); x++){
+                Console.WriteLine(move_weights[x]); 
+            }
             int best_move_index = Array.IndexOf(move_weights, move_weights.Max());
             if(move_weights.Max() == 0 && legal_moves.Length > 16){
                 best_move_index = random.Next(13, 16);//somthig between 13 and 16
@@ -75,10 +81,12 @@ public class MyBot : IChessBot
         int depth = 10;
         int [] final_move_weights = new int[board.GetLegalMoves().Length];
 
-        for(int x = 0; x < board.GetLegalMoves().Length-1; x++){
-            board.MakeMove(board.GetLegalMoves()[x]);
+        for(int x = 0; x < board.GetLegalMoves().Length; x++){
+            //board.MakeMove(board.GetLegalMoves()[x]);
+            //Console.WriteLine("Starting move: " + board.GetLegalMoves()[x]);
             Move[] done_moves = new Move[depth];
             Move picked_move = board.GetLegalMoves()[0];
+            done_moves[0] = board.GetLegalMoves()[x];
             for(int i = 1; i < depth; i++){
                 
                 //if it's odd, look at OUR best move, if othersie look at THEIR best move
@@ -116,6 +124,7 @@ public class MyBot : IChessBot
             for(int i = done_moves.Length-1; i > 0; i--){
                 board.UndoMove(done_moves[i]);
             }
+
         } 
         //TODO;
         //ITs not undoing the moves in the right order
@@ -126,10 +135,10 @@ public class MyBot : IChessBot
         // call the main loop
         Move move = get_best_move(true);
         Move[] legal_moves = board.GetLegalMoves();
-        Console.WriteLine("moves availabel: "+legal_moves.Length);
-        Console.WriteLine("index of best move: " +(index_of_best_move-1));
+        //Console.WriteLine("moves availabel: "+legal_moves.Length);
+        //Console.WriteLine("index of best move: " +(index_of_best_move-1));
         
-        return legal_moves[index_of_best_move-1];
+        return legal_moves[index_of_best_move];
     }
 }
 
