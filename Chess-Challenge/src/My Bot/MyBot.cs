@@ -42,35 +42,26 @@ public class MyBot : IChessBot
         
         }
 
-        //Func to get the current best move, basically looks through the moves and runs
-        //board weight for each move and returns the best move
-        Move get_best_move(bool white){
-            Move[] legal_moves = board.GetLegalMoves();
-            //For each move, make it and get the board value and unmake it
-            int run_all_moves(){
-                move legal_moves = board.GetLegalMoves()
-                for(int i = 0; i < board.GetLegalMoves(); i++){
-                    move move = board.GetLegalMoves()[i]
-                    board.MakeMove(move)
-                    done_moves[i] = move
+        //Okay this is probably wrong but I need to just get the final board values for every single possible board
+        //looking x moves ahead
+        Move minimax(depth, child, white){
 
+            if(depth == 0 || board.IsInCheckmate){
+                return null;
             }
-            for(int i = 0; i < legal_moves.Length; i++){
-                board.MakeMove(legal_moves[i]);
-                done_moves[i] = legal
-            }
-                //undo all the moves
-                for(int j = done_moves.Length; j > 0; j--){
-                    board.UndoMove(done_moves[j]);
+
+            if(white){
+                best_board = -10000000000;
+
+                for(int i = 0; i < board.GetLegalMoves().Legnth; i++){
+                    board_eval = minimax(board.GetLegalMoves()[i], depth-1, false)
                 }
-            } 
-        }        // call the main loop
-        Move move = get_best_move(true);
-        Move[] legal_moves = board.GetLegalMoves();
-        if(legal_moves[index_of_best_move].IsNull == true){
-            return(legal_moves[random.Next(0, legal_moves.Length)]);
+            }else{
+                
+            }
+            
         }
-        return legal_moves[index_of_best_move];
+        }
     }
 
 
