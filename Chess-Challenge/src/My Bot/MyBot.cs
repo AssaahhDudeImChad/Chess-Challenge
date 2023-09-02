@@ -76,7 +76,7 @@ public class MyBot : IChessBot
         //get best move, and make it
         //Get best move for white/ black relative to what the AI is and who's turn it is
         //Do this for x times, and do a final board countup, append that to the main list
-        int depth = 5;
+        int depth = 1000000;
         int [] final_move_weights = new int[board.GetLegalMoves().Length];
 
         for(int x = 0; x < board.GetLegalMoves().Length; x++){
