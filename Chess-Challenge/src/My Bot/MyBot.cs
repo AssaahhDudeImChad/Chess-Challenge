@@ -8,15 +8,15 @@ public class MyBot : IChessBot
 {   
  
     public Move Think(Board board, Timer timer){  
-
-        bool AI_is_white = board.IsWhiteToMove;
-        Random random = new Random();
+        
         Move[] moves = board.GetLegalMoves();
-        //Fucntion to get the board weight in the favour/dis Favour of the AI 
-        int get_board_weight(bool white){
-
-            //loop throguh the piece list and get white and black values
-
+        
+        //Console.WriteLine("Move a: " + moves[0]);
+        //should have
+        Move[,] childmoves = {{moves[0], moves[1]}};
+        Move[] grandchildmoves;
+        bool ai_white = board.IsWhiteToMove;
+        int eval(){
             PieceList[] pieces = board.GetAllPieceLists();
             int white_peices = 0;
             int black_peices = 0;
@@ -30,81 +30,78 @@ public class MyBot : IChessBot
             for(int y = 0; y <6; y++){
                 black_peices += (pieces[y+6].Count * weights[y]);
             }
-            if(white){
-                board_weight = black_peices-white_peices;
+            if(ai_white){
+                board_weight = white_peices - black_peices;
             }else{
-                board_weight = white_peices-black_peices;
+                board_weight = black_peices - white_peices;
             }
-
             return board_weight;
         
         }
-        int [] final_move_weights = new int[board.GetLegalMoves().Length];
+        //for each move, write it into an array with its children, then do the same with the grandkids
+        //THEN go and evaluate it all!
 
-        int max(int depth){
-            if(depth == 0){
-                if(board.IsWhiteToMove){
-                    Console.WriteLine(get_board_weight(true));
-                    return get_board_weight(true);
-                }else{
-                    Console.WriteLine(get_board_weight(false));
-                    return get_board_weight(false);
-                }
-            }
-            //does it ever make the moves??
-            int max = -10000000;
-            Move[] moves = board.GetLegalMoves();
-            for(int i = 0; i < moves.Length; i++){
-                int score = min(depth-1);
-                if(score > max){
-                    max = score;
-                }
-            }
-            
-            return max;
+        Move[,] get_children(Move parent){
+            //set all of the child results to {parent, null}
+            //THEN index through the arrray and add the child
+            //Run this for a single move, it goes and gives the info for all the children!
+            if(parent == null){
 
-        }
-        int min(int depth){
-            if(depth ==0){
-                if(board.IsWhiteToMove){
-                    Console.WriteLine(get_board_weight(false));
-                    return(get_board_weight(false));
-                }else{
-                    Console.WriteLine(get_board_weight(true));
-                    return(get_board_weight(true));
+                return null;
+            }else{
+
+                board.MakeMove(parent);
+                Move[] new_moves = board.GetLegalMoves();
+                
+                childmoves = new Move[new_moves.Length,  2];
+                for(int i=0; i < new_moves.Length; i++){
+                    childmoves[i, 0] = parent;
+                    childmoves[i, 1] = new_moves[i];
+                    //Console.Write(childmoves[i, 0]);
+                    //Console.WriteLine(childmoves[i, 1]);
+                    
                 }
+                board.UndoMove(parent);
+                return(childmoves);
             }
-            int min = -1000000;
-            Move[] moves = board.GetLegalMoves();
-            for(int i=0; i < moves.Length; i++){
-                int score = max(depth-1);
-                if(score < min){
-                    min = score;
-                }
-            }
-            return min;
         }
 
-        Move[] possible_moves = board.GetLegalMoves();
-        int[] board_weights = new int[possible_moves.Length];
-        for(int i = 0; i < possible_moves.Length; i++){
-               board_weights[i] = max(4);
-        }
-        int index_of_best_move=0;
-        if(final_move_weights.Max() == 0){
-            index_of_best_move = random.Next(0, possible_moves.Length);
-            Console.WriteLine("Random");
-        }else{
-            index_of_best_move = Array.IndexOf(board_weights, final_move_weights.Max());
+        int[] evaluate_children(Move[,] child){
+            int[] final_evals = new int[child.Length];
+            Console.WriteLine("Length: " + child.Length);
+            for(int i=0; i < child.Length/2; i++){
+                Console.WriteLine("i: "+i);
+
+                board.MakeMove(child[i,0]);
+                board.MakeMove(child[i,1]);
+                final_evals[i] = eval();
+                board.UndoMove(child[i,1]);
+                board.UndoMove(child[i,0]);
+            }
+            return(final_evals);
+ 
+
         }
 
-        Console.WriteLine("move: " + index_of_best_move);
-        // call the main loop
-        Move[] legal_moves = board.GetLegalMoves();
-        if(legal_moves[index_of_best_move].IsNull == true){
-            return(legal_moves[random.Next(0, legal_moves.Length)]);
+        //loop throughh possible moves and get their children, evaluate those children
+        //Once we evaluate the children, we get the best child and add it to the list with its relevant move
+        //Then we just go to the next one.
+        Move[] available_moves = board.GetLegalMoves();
+        int[] move_tops = new int[available_moves.Length];
+        Move[] top_moves = new Move[available_moves.Length];
+        for(int i=0; i<moves.Length; i++){
+            Move[,] children = get_children(available_moves[i]);
+            Console.WriteLine("Passing in legnth: "+children.Length);
+            int[] child_evals = evaluate_children(children);
+            // we return the top eval from this move
+            move_tops[i] = child_evals.Max();
+            int index = Array.IndexOf(child_evals, child_evals.Max());
+            top_moves[i] = moves[index];
         }
-        return legal_moves[index_of_best_move];
+        int max_eval = move_tops.Max();
+        int indexx = Array.IndexOf(move_tops, max_eval);
+        Console.WriteLine(""+indexx+"");
+        return(moves[indexx]);        
     }
 }
 
