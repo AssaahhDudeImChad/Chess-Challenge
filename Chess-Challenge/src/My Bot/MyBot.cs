@@ -3,19 +3,24 @@ using System.Collections;
 using System;
 using System.Linq;
 
-
 public class MyBot : IChessBot
 {   
-    int num_of_turns = 0;
-    public Move Think(Board board, Timer timer){  
-        num_of_turns += 1;
-
+    
+    public Move Think(Board board, Timer timer){
+        if(board.PlyCount < 2){
+            if(board.IsWhiteToMove){
+                return(new Move("e2e4", board));
+            }else{
+                return(new Move("e7e5", board));
+            }
+        }
+    
         int[,] Piece_pos = {{//pawns
 	        0,   0,   0,   0,   0,   0,   0,   0,
 			50,  50,  50,  50,  50,  50,  50,  50,
 			10,  10,  20,  30,  30,  20,  10,  10,
 			 5,   5,  10,  25,  25,  10,   5,   5,
-			 0,   0,   0,  35,  35,   0,   0,   0,
+			 0,   0,   0,  30,  30,   0,   0,   0,
 			 5,  -5, -10,   -10,   -10, -10,  -5,   5,
 			 5,  10,  10, -20, -20,  10,  10,   5,
 			 0,   0,   0,   0,   0,   0,   0,   0
@@ -65,7 +70,6 @@ public class MyBot : IChessBot
         //Console.WriteLine("Move a: " + moves[0]);
         //should have
         Move[,] childmoves = {{moves[0], moves[1]}};
-        Move[] grandchildmoves;
         bool ai_white = board.IsWhiteToMove;
         int eval(){
             //if there are no available moves because of a mate then obviously pick that move
@@ -122,8 +126,10 @@ public class MyBot : IChessBot
 
                 return weight;
             }
-            int pos_weights = Get_piece_pos_weights(board.GetAllPieceLists(), ai_white);
-            board_weight += pos_weights;
+            if(board.IsInCheckmate()){
+                board_weight += 100000;
+            }
+            board_weight += Get_piece_pos_weights(board.GetAllPieceLists(), ai_white);
             return board_weight;
         
         }
@@ -173,8 +179,21 @@ public class MyBot : IChessBot
             int max_eval = max_evals.Max();
             return moves[Array.IndexOf(max_evals, max_eval)];
         }
+        Move move = find_best_move();
+        if(move == null){
+            int[] fallback_evals = new int[moves.Length];
+            for(int i = 0; i < moves.Length; i++){
+                board.MakeMove(moves[i]);
+                fallback_evals[i] = eval();
+                board.UndoMove(moves[i]);
+            }
+            return(moves[Array.IndexOf(fallback_evals, fallback_evals.Max())]);
+            Console.WriteLine(moves[Array.IndexOf(fallback_evals, fallback_evals.Max())]);
+        }else{
+            return find_best_move();
+        }
 
-        return find_best_move();
+     
 
         //loop throughh possible moves and get their children, evaluate those children
         //Once we evaluate the children, we get the best child and add it to the list with its relevant move
