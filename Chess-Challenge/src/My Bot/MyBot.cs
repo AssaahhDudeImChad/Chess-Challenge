@@ -5,6 +5,7 @@ using System.Linq;
 
 public class MyBot : IChessBot
 {   
+<<<<<<< HEAD
     
     public Move Think(Board board, Timer timer){
         if(board.PlyCount < 2){
@@ -21,7 +22,29 @@ public class MyBot : IChessBot
 			10,  10,  20,  30,  30,  20,  10,  10,
 			 5,   5,  10,  25,  25,  10,   5,   5,
 			 0,   0,   0,  30,  30,   0,   0,   0,
+=======
+    int num_of_turns = 0;
+    public Move Think(Board board, Timer timer){  
+        num_of_turns += 1;
+        int[] pawn_openings = {
+            0,   0,   0,   0,   0,   0,   0,   0,
+			50,  50,  50,  50,  50,  50,  50,  50,
+			10,  10,  20,  30,  30,  20,  10,  10,
+			 5,   5,  10,  25,  25,  10,   5,   5,
+			 0,   0,   0,  40,  40,   0,   0,   0,
+>>>>>>> e2811746184f5290cd5308d7d731844f2da6bb27
 			 5,  -5, -10,   -10,   -10, -10,  -5,   5,
+			 5,  10,  10, -20, -20,  10,  10,   5,
+			 0,   0,   0,   0,   0,   0,   0,   0
+        };
+
+        int[,] Piece_pos = {{//pawns
+			 0,   0,   0,   0,   0,   0,   0,   0,
+			50,  50,  50,  50,  50,  50,  50,  50,
+			10,  10,  20,  30,  30,  20,  10,  10,
+			 5,   5,  10,  25,  25,  10,   5,   5,
+			 0,   0,   0,  25,  25,   0,   0,   0,
+			 5,  -5, -10,   0,   0, -10,  -5,   5,
 			 5,  10,  10, -20, -20,  10,  10,   5,
 			 0,   0,   0,   0,   0,   0,   0,   0
 		},
@@ -114,10 +137,12 @@ public class MyBot : IChessBot
                         Piece piece = pieces[z].GetPiece(j);
                         Square pos = piece.Square;
                         int index = pos.Index;
-                        
                         int y = z;
-                        if(y > 4){
-                            y -= 5;
+                        if(num_of_turns > 5 || y == 0){
+                            weight += pawn_openings[index];
+                            break;
+                        }else if(y > 4){
+                            y -=5;
                         }
                         weight += Piece_pos[y, index];
                     }
@@ -126,10 +151,20 @@ public class MyBot : IChessBot
 
                 return weight;
             }
+<<<<<<< HEAD
             if(board.IsInCheckmate()){
                 board_weight += 100000;
             }
             board_weight += Get_piece_pos_weights(board.GetAllPieceLists(), ai_white);
+=======
+            int pos_weights = Get_piece_pos_weights(board.GetAllPieceLists(), ai_white);
+            board_weight += pos_weights;
+            if(board.IsInCheck()){
+                board_weight+= 30;
+            }if(board.IsInCheckmate()){
+                board_weight+= 100000;
+            }
+>>>>>>> e2811746184f5290cd5308d7d731844f2da6bb27
             return board_weight;
         
         }
@@ -144,6 +179,9 @@ public class MyBot : IChessBot
             //THEN index through the arrray and add the child
             //Run this for a single move, it goes and gives the info for all the children!
             Move[] moves = board.GetLegalMoves();
+            if(moves.Length == 0){
+                Console.WriteLine("Checkmate incoming");1
+            }
             int[] max_evals = new int[moves.Length];
             for(int i = 0; i < moves.Length; i++){
                 //we look at all of the availabel moves now(moves for us) and make them
@@ -151,6 +189,9 @@ public class MyBot : IChessBot
                 done_moves[0] = moves[i];
                 Move[] new_moves= board.GetLegalMoves();
                 int[] new_evals = new int[new_moves.Length];
+                if(new_evals.Length == 0){
+                    return(moves[i]);
+                }
                 for(int j = 0; j < new_moves.Length; j ++){
                     //then we do the same with all the oponants moves and save the result from the best one
                     board.MakeMove(new_moves[j]); 
@@ -178,7 +219,10 @@ public class MyBot : IChessBot
             
             int max_eval = max_evals.Max();
             return moves[Array.IndexOf(max_evals, max_eval)];
+          
+        
         }
+<<<<<<< HEAD
         Move move = find_best_move();
         if(move == null){
             int[] fallback_evals = new int[moves.Length];
@@ -198,7 +242,11 @@ public class MyBot : IChessBot
         //loop throughh possible moves and get their children, evaluate those children
         //Once we evaluate the children, we get the best child and add it to the list with its relevant move
         //Then we just go to the next one
+=======
+        return find_best_move();
+>>>>>>> e2811746184f5290cd5308d7d731844f2da6bb27
     }
-
+    
 }
+
 
