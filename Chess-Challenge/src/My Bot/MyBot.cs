@@ -9,16 +9,6 @@ public class MyBot : IChessBot
     int num_of_turns = 0;
     public Move Think(Board board, Timer timer){  
         num_of_turns += 1;
-        int[] pawn_openings = {
-            0,   0,   0,   0,   0,   0,   0,   0,
-			50,  50,  50,  50,  50,  50,  50,  50,
-			10,  10,  20,  30,  30,  20,  10,  10,
-			 5,   5,  10,  25,  25,  10,   5,   5,
-			 0,   0,   0,  40,  40,   0,   0,   0,
-			 5,  -5, -10,   -10,   -10, -10,  -5,   5,
-			 5,  10,  10, -20, -20,  10,  10,   5,
-			 0,   0,   0,   0,   0,   0,   0,   0
-        };
 
         int[,] Piece_pos = {{//pawns
 			 0,   0,   0,   0,   0,   0,   0,   0,
@@ -71,10 +61,24 @@ public class MyBot : IChessBot
 			-20,-10,-10, -5, -5,-10,-10,-20
 		}};
         Move[] moves = board.GetLegalMoves();
-        
+        //Kings pawn, 
+        string[,] openings = {{"e2e4", "e7e5"}, {"d2d4", "d7d5"}, {"f2f4", "f7f5"}, {"c2c4", "c7c5"}};
         //Console.WriteLine("Move a: " + moves[0]);
         //should have
-        Move[,] childmoves = {{moves[0], moves[1]}};
+        if(moves.Length == 0){
+            Move[,] childmoves = {{moves[0], moves[1]}};
+        }
+        Random random = new Random();
+
+        if(board.PlyCount < 2){
+            
+            if(board.IsWhiteToMove){
+                return(new Move(openings[random.Next(0, 4), 0], board));
+            }else{
+                return(new Move(openings[random.Next(0, 4), 1], board));
+            }
+        }
+
         Move[] grandchildmoves;
         bool ai_white = board.IsWhiteToMove;
         int eval(){
@@ -121,10 +125,7 @@ public class MyBot : IChessBot
                         Square pos = piece.Square;
                         int index = pos.Index;
                         int y = z;
-                        if(num_of_turns > 5 || y == 0){
-                            weight += pawn_openings[index];
-                            break;
-                        }else if(y > 4){
+                        if(y > 4){
                             y -=5;
                         }
                         weight += Piece_pos[y, index];
@@ -156,7 +157,7 @@ public class MyBot : IChessBot
             //Run this for a single move, it goes and gives the info for all the children!
             Move[] moves = board.GetLegalMoves();
             if(moves.Length == 0){
-                Console.WriteLine("Checkmate incoming");1
+                Console.WriteLine("Checkmate incoming");
             }
             int[] max_evals = new int[moves.Length];
             for(int i = 0; i < moves.Length; i++){
@@ -177,7 +178,6 @@ public class MyBot : IChessBot
                 //NEW EVALS is doesnt have it??? 
                 //then we finally do it for the best moves from that, and boom.
                 int index_best_oppopnant_move = Array.IndexOf(new_evals, new_evals.Min());
-                Console.WriteLine("possile op moves: " + new_moves.Length + "best: " + index_best_oppopnant_move);
                 board.MakeMove(new_moves[index_best_oppopnant_move]);
                 done_moves[1] = new_moves[index_best_oppopnant_move];
                 Move[] newer_moves = board.GetLegalMoves();
@@ -187,7 +187,12 @@ public class MyBot : IChessBot
                     evals[j] = eval();
                     board.UndoMove(newer_moves[j]);
                 }
-                max_evals[i] = evals.Max();
+                if(evals.Length > 0){
+                    max_evals[i] = evals.Max();
+                }else{
+                    return(moves[0]);
+                }
+
                 for(int k = 2; k > -1; k--){
                     board.UndoMove(done_moves[k]);
                 }     
