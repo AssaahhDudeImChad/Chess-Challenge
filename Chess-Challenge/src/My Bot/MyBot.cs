@@ -89,7 +89,7 @@ public class MyBot : IChessBot
             int black_peices = 0;
             
             //Pawns, Knights, Bishops,Rooks, Queen, King
-            int[] weights = {10, 30, 30, 50, 90, 100};
+            int[] weights = {20, 40, 40, 60, 100, 100};
             int board_weight = 0;
             //peices are listed white then black so loops through the whites then the black
             for(int i = 0; i < 6; i++){
@@ -102,6 +102,14 @@ public class MyBot : IChessBot
                 board_weight = white_peices - black_peices;
             }else{
                 board_weight = black_peices - white_peices;
+            }
+            if(board.IsInCheckmate()){
+                //this means we have been mated
+                if((board.IsWhiteToMove & ai_white==false) || board.IsWhiteToMove==false & ai_white){
+                    board_weight += 1000000;
+                }else if((board.IsWhiteToMove & ai_white) || board.IsWhiteToMove == false & ai_white == false){
+                    board_weight -= 1000000;
+                }
             }
 
             int Get_piece_pos_weights(PieceList[] pieces, bool ai_white){
@@ -136,15 +144,14 @@ public class MyBot : IChessBot
                 return weight;
             }
             int pos_weights = Get_piece_pos_weights(board.GetAllPieceLists(), ai_white);
+            //Here it seems to be going FOR it's own checkmate/check, Need a way to find out if
+            //the bot is the one being checkmated or the oponant
+
             board_weight += pos_weights;
-            if(board.IsInCheck()){
-                board_weight+= 30;
-            }if(board.IsInCheckmate()){
-                board_weight+= 100000;
-            }
             return board_weight;
         
         }
+   
         //We need to see all of the moves, make them, get the evaluation of that board 
         //and pick the move with the best evaluation in their favour, and pick that, make it one and then 
         //see what our best move from THAT board is
@@ -203,7 +210,9 @@ public class MyBot : IChessBot
           
         
         }
+ 
         return find_best_move();
+
     }
     
 }
