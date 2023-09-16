@@ -167,6 +167,7 @@ public class MyBot : IChessBot
                 Console.WriteLine("Checkmate incoming");
             }
             int[] max_evals = new int[moves.Length];
+            
             for(int i = 0; i < moves.Length; i++){
                 //we look at all of the availabel moves now(moves for us) and make them
                 board.MakeMove(moves[i]);
@@ -182,7 +183,6 @@ public class MyBot : IChessBot
                     new_evals[j] = eval();
                     board.UndoMove(new_moves[j]);
                 }
-                //NEW EVALS is doesnt have it??? 
                 //then we finally do it for the best moves from that, and boom.
                 int index_best_oppopnant_move = Array.IndexOf(new_evals, new_evals.Min());
                 board.MakeMove(new_moves[index_best_oppopnant_move]);
@@ -192,6 +192,9 @@ public class MyBot : IChessBot
                 for(int j = 0; j < newer_moves.Length; j++){
                     board.MakeMove(newer_moves[j]);
                     evals[j] = eval();
+                    if(newer_moves[j].IsPromotion){
+                        max_evals[i] += 30;
+                    }
                     board.UndoMove(newer_moves[j]);
                 }
                 if(evals.Length > 0){
