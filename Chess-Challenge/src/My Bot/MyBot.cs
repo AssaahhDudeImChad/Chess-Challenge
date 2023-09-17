@@ -3,13 +3,9 @@ using System.Collections;
 using System;
 using System.Linq;
 
-
 public class MyBot : IChessBot
 {   
-    int num_of_turns = 0;
     public Move Think(Board board, Timer timer){  
-        num_of_turns += 1;
-
         int[,] Piece_pos = {{//pawns
 			 0,   0,   0,   0,   0,   0,   0,   0,
 			50,  50,  50,  50,  50,  50,  50,  50,
@@ -216,5 +212,6 @@ public class MyBot : IChessBot
     }
     
 }
+
 
 
