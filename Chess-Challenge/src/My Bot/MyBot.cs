@@ -111,6 +111,14 @@ public class MyBot : IChessBot
                     board_weight -= 1000000;
                 }
             }
+            if(board.IsInCheck()){
+                //this means we have been checked
+                if((board.IsWhiteToMove & ai_white==false) || board.IsWhiteToMove==false & ai_white){
+                    board_weight += 1000000;
+                }else if((board.IsWhiteToMove & ai_white) || board.IsWhiteToMove == false & ai_white == false){
+                    board_weight -= 1000000;
+                }
+            }
 
             int Get_piece_pos_weights(PieceList[] pieces, bool ai_white){
                 
@@ -170,6 +178,9 @@ public class MyBot : IChessBot
             
             for(int i = 0; i < moves.Length; i++){
                 //we look at all of the availabel moves now(moves for us) and make them
+                if(moves[i].IsPromotion){
+                        max_evals[i] += 30;
+                }
                 board.MakeMove(moves[i]);
                 done_moves[0] = moves[i];
                 Move[] new_moves= board.GetLegalMoves();
@@ -181,6 +192,7 @@ public class MyBot : IChessBot
                     //then we do the same with all the oponants moves and save the result from the best one
                     board.MakeMove(new_moves[j]); 
                     new_evals[j] = eval();
+                    
                     board.UndoMove(new_moves[j]);
                 }
                 //then we finally do it for the best moves from that, and boom.
@@ -193,7 +205,7 @@ public class MyBot : IChessBot
                     board.MakeMove(newer_moves[j]);
                     evals[j] = eval();
                     if(newer_moves[j].IsPromotion){
-                        max_evals[i] += 30;
+                        max_evals[i] += 100;
                     }
                     board.UndoMove(newer_moves[j]);
                 }
